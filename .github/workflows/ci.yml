@@ -1,0 +1,52 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "17 3 * * *" # nightly: live checks
+    - cron: "43 5 * * 4" # Thursdays: upstream fork-table check
+
+jobs:
+  # Required: needs no network.
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm ci
+      - run: node --test
+
+  # Not required: talks to BSC through the BSC_RPC repository variable (a public node if unset).
+  live:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    env:
+      BSC_RPC: ${{ vars.BSC_RPC }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: node bin/bsc-block-time.js when 35000000
+      - run: node scripts/check-accuracy.mjs
+
+  # Weekly: fail if bnb-chain/bsc has a fork time or block interval the table lacks.
+  upstream:
+    if: github.event_name == 'schedule' || github.event_name == 'push'
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: node scripts/check-upstream.mjs
