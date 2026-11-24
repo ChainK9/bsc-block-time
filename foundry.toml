@@ -1,0 +1,6 @@
+# Only for src/BscClock.sol and its test. The CLI is Node: see package.json.
+[profile.default]
+src = "src"
+test = "test"
+out = "out"
+libs = []

@@ -1,6 +1,6 @@
 {
   "name": "bsc-block-time",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Convert BNB Smart Chain block numbers to dates using the real hardfork schedule (3 s, 1.5 s, 0.75 s, 0.45 s), and flag contracts that count time in blocks.",
   "type": "module",
   "bin": {

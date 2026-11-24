@@ -125,6 +125,26 @@ Block-related getters:
   DEADLINE_BLOCKS() = 28,800: a count of blocks, 3 h 36 m at 0.45 s (1 d if blocks were still 3 s)
 ```
 
+### BscClock.sol, for Foundry tests
+
+`vm.warp` moves the clock and leaves `block.number` where it was; `vm.roll` does the opposite. A test
+of a lock counted in blocks can then pass while the lock opens 6.7 times sooner on chain.
+`BscClock` moves both together at 450 ms per block.
+
+```bash
+forge install ChainK9/bsc-block-time
+```
+
+```solidity
+import {BscClock} from "bsc-block-time/BscClock.sol";
+
+BscClock.roll(28_800);   // 28,800 blocks: block.timestamp moves 3 h 36 m, not a day
+BscClock.skip(1 days);   // one day: block.number moves 192,000
+```
+
+It is one file with no dependencies (not even forge-std), so copying `src/BscClock.sol` works too.
+`roll` rounds the time down to whole seconds, because `block.timestamp` has none.
+
 ## The fork table
 
 Fork times come from `bnb-chain/bsc`: `params/config.go` (`BSCChainConfig`) and
@@ -176,6 +196,8 @@ accumulated drift beyond the projection distance.
   check exists to catch a new interval the week it is scheduled.
 - Pre-Lorentz dates are estimates (up to about 3 days off for old blocks) unless you ask the RPC,
   and public nodes may not serve very old state.
+- `BscClock.sol` uses 450 ms for every block. That is right for a fork of BSC after Fermi
+  (2026-01-14), wrong for a fork pinned earlier.
 - BSC only. No Ethereum or other chains.
 
 ## Roadmap
@@ -187,7 +209,6 @@ accumulated drift beyond the projection distance.
 - A growing dictionary of getters and constants from real contracts.
 - A survey of recent BSC tokens that read `block.number`, published as a dated report.
 - `--sarif` output and a GitHub Action, to run `scan` in your CI.
-- `BscClock.sol`, a Foundry helper that moves `block.number` and time together at the real ratio.
 
 See [CHANGELOG.md](CHANGELOG.md).
 
@@ -198,6 +219,7 @@ npm ci
 node --test                          # offline, no network
 node scripts/check-accuracy.mjs      # network: anchors against real timestamps
 node scripts/check-upstream.mjs      # network: fork table against bnb-chain/bsc
+forge test                           # BscClock.sol (Foundry, no network)
 ```
 
 MIT licensed. [chaink9.com](https://chaink9.com) checks tokens on BSC, Ethereum and Base by forking

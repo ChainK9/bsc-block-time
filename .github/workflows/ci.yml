@@ -8,6 +8,14 @@ on:
     - cron: "43 5 * * 4" # Thursdays: upstream fork-table check
 
 jobs:
+  # Required: needs no network. Tests src/BscClock.sol.
+  solidity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: foundry-rs/foundry-toolchain@v1
+      - run: forge test
+
   # Required: needs no network.
   test:
     runs-on: ubuntu-latest

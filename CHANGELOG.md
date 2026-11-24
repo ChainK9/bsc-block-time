@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.0 (2026-11-24)
+
+- `src/BscClock.sol`: a Foundry test helper that moves `block.number` and `block.timestamp` together
+  at 450 ms per block (`BscClock.roll(blocks)`, `BscClock.skip(secs)`). One file, no dependencies;
+  `forge install ChainK9/bsc-block-time`.
+- CI runs its Foundry tests (`forge test`, no network).
+
 ## 0.1.0 (2026-11-19)
 
 - First release: `when`, `span`, `blocks` and `scan` for BNB Smart Chain.
